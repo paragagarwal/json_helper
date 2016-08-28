@@ -1,6 +1,7 @@
 import random
 import string
 import uuid
+import copy
 from datetime import datetime
 from random import randint
 
@@ -95,6 +96,16 @@ class JSONGenerator(object):
         function_name = random.choice(function_list)
         return (self.random_uuid() + "_" + function_name), getattr(self, function_name)()
 
+    def nested_random_json(self, random_fields = False, random_array_count = 4, nested_level = 1, source_json=None):
+        if source_json is None:
+            source_json=self.random_json(random_fields=random_fields, random_array_count=random_array_count)
+        json_ptr=copy.deepcopy(source_json)
+        base_json=json_ptr
+        for index in range(nested_level):
+            json_ptr["level_{0}".format(index)]=copy.deepcopy(source_json)
+            json_ptr=json_ptr["level_{0}".format(index)]
+        return base_json
+
     def random_json(self, random_fields = False, random_array_count = 4):
     	json_body = {}
     	function_list = ["random_int", "random_float", "random_alphanumeric", "random_float","random_boolean", "random_multi_dimension_array", "random_char"]
@@ -109,6 +120,26 @@ class JSONGenerator(object):
                     json_body[(self.random_uuid() + "_" + function.replace("random_", ""))] = getattr(self, function)()
         return json_body
 
+    def gen_json_from_template(self, source={}):
+        if isinstance(source, dict):
+            new_json={}
+            for key, val in source.iteritems():
+                new_json[key] = self.gen_json_from_template(val)
+            return new_json
+        elif isinstance(source, list):
+            new_list=[]
+            for index in range(len(source)):
+                new_list.append(self.gen_json_from_template(source[index]))
+            return new_list
+        elif isinstance(source, int):
+            return self.random_int()
+        elif isinstance(source, str):
+            return self.random_alphanumeric()
+        elif isinstance(source, float):
+            return self.random_float()
+        elif source is None:
+            return None
+
     def isChoice(self):
         return random.choice([True, False])
 
@@ -116,6 +147,9 @@ if __name__=="__main__":
     helper = JSONGenerator()
     print helper.isChoice()
     print helper.isChoice()
-    #print helper.random_single_dimension_array(max_array_size = 100)
+    print helper.random_single_dimension_array(max_array_size = 100)
     print helper.random_array()
-    #print helper.random_json()
+    print helper.random_json()
+    json_data={"field":"field_value"}
+    print helper.nested_random_json(nested_level=10,  source_json=json_data)
+    print helper.gen_json_from_template(source = {"int_field":1, "float_field":1.1, "array_field": [0, 1], "json":{"int_field":1}})
