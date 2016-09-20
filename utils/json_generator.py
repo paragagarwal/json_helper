@@ -24,6 +24,7 @@ class JSONGenerator(object):
 
     def random_uuid(self):
         return str(uuid.uuid4()).replace("-","")
+
     def random_char(self):
         return random.choice(string.ascii_uppercase)
 
@@ -142,14 +143,3 @@ class JSONGenerator(object):
 
     def isChoice(self):
         return random.choice([True, False])
-
-if __name__=="__main__":
-    helper = JSONGenerator()
-    print helper.isChoice()
-    print helper.isChoice()
-    print helper.random_single_dimension_array(max_array_size = 100)
-    print helper.random_array()
-    print helper.random_json()
-    json_data={"field":"field_value"}
-    print helper.nested_random_json(nested_level=10,  source_json=json_data)
-    print helper.gen_json_from_template(source = {"int_field":1, "float_field":1.1, "array_field": [0, 1], "json":{"int_field":1}})
